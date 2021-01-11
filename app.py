@@ -77,15 +77,17 @@ def view_product(search_id=None):
     view_p = Product.select().where(Product.product_id==search_id)
     if view_p:
         for item in view_p:
-            print("ID: {}".format(item.product_id))
-            print("Product: {}.".format(item.product_name))
+            print("*** ID: {} ***".format(item.product_id), "\n","Product: {}.".format(item.product_name),"\n", "Total amount in stock:{}".format(item.product_quantity),"\n","Current price:{}".format(item.product_price), "\n", "Last time updated:{}".format(item.date_updated)
+            
+            )
+            
     else:
         print("Id not found. Try again.")
         search_product()
             
 
 def search_product():
-    """Display a product using the 'product_id'"""
+    """View a product using the 'product_id'"""
     view_product(input('Search id: '))
     
 
@@ -115,14 +117,12 @@ def add_product():
                         )
             print(f"{new_product} saved successfully!".title())
 
-        continue_or_not = input("Type 'c' to continue adding products, 'r' to return to main menu or 'q' to quit: ").lower().strip()
+        continue_or_not = input("Type 'c' to continue adding products or 'r' to return to main menu: ").lower().strip()
         if continue_or_not == 'c':
             continue
         elif continue_or_not == 'r':
-            menu()
-        elif continue_or_not == 'q':
-            print("Thanks!")
             break
+        
         
 
 def backup_db():
@@ -134,12 +134,12 @@ def backup_db():
         dbwriter.writeheader()
         
         for item in Product.select().order_by(Product.product_id.desc()):
-            dbwriter.writerow({'product_id': item.product_id})
-            dbwriter.writerow({'product_name': item.product_name})
-            dbwriter.writerow({'product_price': item.product_price})
-            dbwriter.writerow({'product_quantity': item.product_quantity})
-            dbwriter.writerow({'date_updated': item.date_updated})
-
+            dbwriter.writerow({
+                'product_id': item.product_id,
+                'product_name': item.product_name,
+                'product_price': item.product_price,
+                'product_quantity': item.product_quantity,
+                'date_updated': item.date_updated})
         print("Backup successful.")
 
         csvfile.close() 
@@ -160,13 +160,12 @@ def menu():
         print("\nEnter 'q' to quit.\n")
         for key, value in my_menu.items():
             print('{}) {}'.format(key, value.__doc__))
-        
+            
         choice = input("Action:  ").lower().strip()
         clear()
         if choice in my_menu:
             my_menu[choice]()
         
-                
 
 if __name__ == '__main__':
     initialize()
