@@ -32,31 +32,19 @@ def clear():
 
     
 def transform_db():
-    my_inventory = []
     with open('inventory.csv', newline ='') as csvfile:
         file_reader = csv.DictReader(csvfile, delimiter = ',')
-        
-        for dictionary in file_reader:
-            new_dict = {'product_id': Product().product_id}
-            for key, value in dictionary.items():
-                if key == "product_price":
-                    value = value.replace("$", "")
-                    int_value = int(float(value) * 100)
-                    new_dict[key] = int_value
-                elif key == 'product_quantity':
-                    new_dict[key] = int(value)
-                elif key == 'date_updated':
-                    new_dict[key] = datetime.strptime(
-                        f'{value} 00:00:00', '%m/%d/%Y %H:%M:%S').date()
-                else:
-                    new_dict[key] = value
+        my_inventory = list(file_reader)
+        for item in my_inventory:
+            item['product_price'] = int(float(item['product_price'].replace("$", ""))) * 100
+            item['product_quantity'] = int(item['product_quantity'])
+            item['date_updated'] =  datetime.strptime(item['date_updated'],'%m/%d/%Y').date()     
+                
         csvfile.close()
-        my_inventory.append(new_dict)
 
     for item in my_inventory:
         try:
             Product.create(
-                product_id = item['product_id'],
                 product_name = item['product_name'],
                 product_price = item['product_price'],
                 product_quantity = item['product_quantity'],
@@ -74,7 +62,7 @@ def view_product(search_id=None):
         view_p = Product.select().where(Product.product_id==search_id)
         if view_p:
             for item in view_p:
-                print("*** ID: {} ***".format(item.product_id), "\n","Product: {}.".format(item.product_name),"\n", "Total amount in stock:{}".format(item.product_quantity),"\n","Current price:{}".format(item.product_price), "\n", "Last time updated:{}".format(item.date_updated)
+                print("*** ID: {} ***".format(item.product_id), "\n","Product: {}.".format(item.product_name),"\n", "Total amount in stock: {}".format(item.product_quantity),"\n","Current price: {}".format(item.product_price), "\n", "Last time updated: {}".format(item.date_updated)
                 
                 )
                 
@@ -175,23 +163,3 @@ if __name__ == '__main__':
     transform_db()
     menu()
    
-    
-
-  
-    
-
-                
-    
-
-
-
-
-
-
-            
-   
-
-
-
-
-
