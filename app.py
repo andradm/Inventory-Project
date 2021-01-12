@@ -5,11 +5,7 @@ from datetime import datetime
 import os
 import sys
 
-
-
 from peewee import *
-
-
 
 db = SqliteDatabase('inventory.db')
 
@@ -24,39 +20,39 @@ class Product(Model):
     class Meta:
         database = db
 
+
 def initialize():
     """Create the database and the table if they don't exist."""
     db.connect()
     db.create_tables([Product], safe=True)
 
+
 def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
 
     
-my_inventory = []
-
-with open('inventory.csv', newline ='') as csvfile:
-    file_reader = csv.DictReader(csvfile, delimiter = ',')
-    
-    for dictionary in file_reader:
-        new_dict = {'product_id': Product().product_id}
-        for key, value in dictionary.items():
-            if key == "product_price":
-                value = value.replace("$", "")
-                int_value = int(float(value) * 100)
-                new_dict[key] = int_value
-            elif key == 'product_quantity':
-                new_dict[key] = int(value)
-            elif key == 'date_updated':
-                new_dict[key] = datetime.strptime(
-                    f'{value} 00:00:00', '%m/%d/%Y %H:%M:%S').date()
-            else:
-                new_dict[key] = value
-    csvfile.close()
-    my_inventory.append(new_dict)
-
-       
 def transform_db():
+    my_inventory = []
+    with open('inventory.csv', newline ='') as csvfile:
+        file_reader = csv.DictReader(csvfile, delimiter = ',')
+        
+        for dictionary in file_reader:
+            new_dict = {'product_id': Product().product_id}
+            for key, value in dictionary.items():
+                if key == "product_price":
+                    value = value.replace("$", "")
+                    int_value = int(float(value) * 100)
+                    new_dict[key] = int_value
+                elif key == 'product_quantity':
+                    new_dict[key] = int(value)
+                elif key == 'date_updated':
+                    new_dict[key] = datetime.strptime(
+                        f'{value} 00:00:00', '%m/%d/%Y %H:%M:%S').date()
+                else:
+                    new_dict[key] = value
+        csvfile.close()
+        my_inventory.append(new_dict)
+
     for item in my_inventory:
         try:
             Product.create(
@@ -74,24 +70,28 @@ def transform_db():
 
                 
 def view_product(search_id=None):
-    view_p = Product.select().where(Product.product_id==search_id)
-    if view_p:
-        for item in view_p:
-            print("*** ID: {} ***".format(item.product_id), "\n","Product: {}.".format(item.product_name),"\n", "Total amount in stock:{}".format(item.product_quantity),"\n","Current price:{}".format(item.product_price), "\n", "Last time updated:{}".format(item.date_updated)
-            
-            )
-            
-    else:
-        print("Id not found. Try again.")
+    try:
+        view_p = Product.select().where(Product.product_id==search_id)
+        if view_p:
+            for item in view_p:
+                print("*** ID: {} ***".format(item.product_id), "\n","Product: {}.".format(item.product_name),"\n", "Total amount in stock:{}".format(item.product_quantity),"\n","Current price:{}".format(item.product_price), "\n", "Last time updated:{}".format(item.date_updated)
+                
+                )
+                
+        else:
+            print("Id not found. Try again.")
+            search_product()
+
+    except ValueError: 
+        print("This is not a valid entry. Try again.")
         search_product()
-            
+         
 
 def search_product():
     """View a product using the 'product_id'"""
     view_product(input('Search id: '))
     
 
-            
 def add_product():
     """Add a product to the inventory."""
     while True:
@@ -123,11 +123,10 @@ def add_product():
         elif continue_or_not == 'r':
             break
         
-        
 
 def backup_db():
     """Backup the inventory database. """
-    backup = 'latest_inventory.csv'
+    backup = 'the_latest_inventory.csv'
     fieldnames = ['product_id','product_name', 'product_price', 'product_quantity', 'date_updated']
     with open(backup, 'w', newline='') as csvfile:
         dbwriter = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -140,10 +139,14 @@ def backup_db():
                 'product_price': item.product_price,
                 'product_quantity': item.product_quantity,
                 'date_updated': item.date_updated})
+        print("********************")
         print("Backup successful.")
+        print("********************", "\n")
 
         csvfile.close() 
+
         menu()
+
 
 my_menu = OrderedDict([
     ('a',add_product),
