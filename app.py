@@ -94,23 +94,37 @@ def add_product():
         except ValueError:
             print('This is not a valid entry. Try again using numbers only.')
             continue
-
+        
         save_or_not = input('Save entry? [Yn] ').lower() 
-        if save_or_not != 'n':
-            Product.create(
-                product_name = new_product,
-                product_price = clean_price,
-                product_quantity = new_p_quantity,
-                date_updated = timestamp
-                        )
-            print(f"{new_product} saved successfully!".title())
+        try:
+            
+                if save_or_not != 'n':
+                    Product.create(
+                        product_name = new_product,
+                        product_price = clean_price,
+                        product_quantity = new_p_quantity,
+                        date_updated = timestamp
+                                )
+                    print(f"{new_product} saved successfully!".title())
+
+        except IntegrityError:
+            question = input("This product already exists. Would you like to update it? [Yn] ")
+            if question == "y".lower().strip():
+                Product.update(
+                    product_price = entry_2,
+                    product_quantity = new_p_quantity,
+                    date_updated = timestamp).where(Product.product_name ==new_product).execute()
+                print("Product updated!","\n")
+            elif question == "n".lower().strip():
+                print("Thanks!")
+                break
 
         continue_or_not = input("Type 'c' to continue adding products or 'r' to return to main menu: ").lower().strip()
         if continue_or_not == 'c':
             continue
         elif continue_or_not == 'r':
             break
-        
+            
 
 def backup_db():
     """Backup the inventory database. """
@@ -154,7 +168,10 @@ def menu():
             
         choice = input("Action:  ").lower().strip()
         clear()
-        if choice in my_menu:
+        if choice not in my_menu:
+            print("This is not a valid choice. Try again.")
+            continue
+        elif choice in my_menu:
             my_menu[choice]()
         
 
