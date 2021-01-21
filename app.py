@@ -112,7 +112,6 @@ def add_product():
         except IntegrityError:
             question = input("This product already exists. Would you like to update it? [Yn] ")
             if question == "y".lower().strip():
-                Product.select(Product.product_name).where(Product.product_name.order_by(Product.product_name.desc())
                 Product.update(
                     product_price = entry_2,
                     product_quantity = new_p_quantity,
