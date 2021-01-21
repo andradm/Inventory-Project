@@ -36,7 +36,8 @@ def transform_db():
         file_reader = csv.DictReader(csvfile, delimiter = ',')
         my_inventory = list(file_reader)
         for item in my_inventory:
-            item['product_price'] = int(float(item['product_price'].replace("$", ""))) * 100
+            item['product_price'] = float(item['product_price'].replace("$", "")) * 100
+            item['product_price'] = int(item['product_price'])
             item['product_quantity'] = int(item['product_quantity'])
             item['date_updated'] =  datetime.strptime(item['date_updated'],'%m/%d/%Y').date()     
                 
@@ -87,8 +88,8 @@ def add_product():
         new_product = input("Please enter your product name: ")
 
         try:
-            entry_2 = float(input("Enter the price of the product: $"))
-            clean_price = int(entry_2 * 100)
+            entry_2 = float(input("Enter the price of the product: $")) *100
+            integer_value = int(entry_2)
             new_p_quantity = int(input("Enter the quantity for the inventory: "))
             timestamp = datetime.now().date()
         except ValueError:
@@ -101,19 +102,21 @@ def add_product():
                 if save_or_not != 'n':
                     Product.create(
                         product_name = new_product,
-                        product_price = clean_price,
+                        product_price = integer_value,
                         product_quantity = new_p_quantity,
                         date_updated = timestamp
                                 )
                     print(f"{new_product} saved successfully!".title())
 
+
         except IntegrityError:
             question = input("This product already exists. Would you like to update it? [Yn] ")
             if question == "y".lower().strip():
+                Product.select(Product.product_name).where(Product.product_name.order_by(Product.product_name.desc())
                 Product.update(
                     product_price = entry_2,
                     product_quantity = new_p_quantity,
-                    date_updated = timestamp).where(Product.product_name ==new_product).execute()
+                    date_updated = timestamp).where(Product.product_name==new_product).execute()
                 print("Product updated!","\n")
             elif question == "n".lower().strip():
                 print("Thanks!")
